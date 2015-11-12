@@ -11,6 +11,8 @@
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UIView *trayView;
 @property (nonatomic, assign) CGPoint trayOriginalCenter;
+@property (nonatomic, assign) CGPoint trayCenterWhenOpen;
+@property (nonatomic, assign) CGPoint trayCenterWhenClosed;
 
 - (IBAction)onTrayPanGesture:(UIPanGestureRecognizer *)sender;
 @end
@@ -19,6 +21,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.trayCenterWhenOpen = self.trayView.center;
+    self.trayCenterWhenClosed = CGPointMake(self.trayView.center.x, self.trayView.center.y + CGRectGetHeight(self.trayView.frame) - 50);
     // Do any additional setup after loading the view, typically from a nib.
 }
 
@@ -40,6 +44,19 @@
                                            self.trayOriginalCenter.y + translation.y);
     } else if (sender.state == UIGestureRecognizerStateEnded) {
         NSLog(@"Gesture ended at: %@", NSStringFromCGPoint(translation));
+        CGPoint velocity = [sender velocityInView:self.trayView];
+        if (velocity.y > 0) {
+            [UIView animateWithDuration:1 delay:0 usingSpringWithDamping:0.5 initialSpringVelocity:0.5 options:0 animations:^{
+                self.trayView.center = self.trayCenterWhenClosed;
+            } completion:^(BOOL finished) {
+            }];
+            
+        } else {
+            [UIView animateWithDuration:1 delay:0 usingSpringWithDamping:0.5 initialSpringVelocity:0.5 options:0 animations:^{
+                self.trayView.center = self.trayCenterWhenOpen;
+            } completion:^(BOOL finished) {
+            }];
+        }
     }
 }
 @end
