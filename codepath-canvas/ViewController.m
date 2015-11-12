@@ -13,8 +13,11 @@
 @property (nonatomic, assign) CGPoint trayOriginalCenter;
 @property (nonatomic, assign) CGPoint trayCenterWhenOpen;
 @property (nonatomic, assign) CGPoint trayCenterWhenClosed;
+@property (nonatomic, strong) UIImageView *newlyCreatedFace;
+@property (nonatomic, assign) CGPoint newlyCreatedFaceOriginalCenter;
 
 - (IBAction)onTrayPanGesture:(UIPanGestureRecognizer *)sender;
+- (IBAction)onImagePanGesture:(UIPanGestureRecognizer *)sender;
 @end
 
 @implementation ViewController
@@ -57,6 +60,35 @@
             } completion:^(BOOL finished) {
             }];
         }
+    }
+}
+
+- (IBAction)onImagePanGesture:(UIPanGestureRecognizer *)sender {
+    CGPoint translation = [sender translationInView:self.view];
+    CGFloat trayViewOffset = self.trayView.frame.origin.y;
+    
+    if (sender.state == UIGestureRecognizerStateBegan) {
+        // Gesture recognizers know the view they are attached to
+        UIImageView *imageView = (UIImageView *)sender.view;
+        
+        // Create a new image view that has the same image as the one currently panning
+        self.newlyCreatedFace = [[UIImageView alloc] initWithImage:imageView.image];
+        self.newlyCreatedFaceOriginalCenter = sender.view.center;
+        
+        // Add the new face to the tray's parent view.
+        [self.view addSubview:self.newlyCreatedFace];
+        
+        // Initialize the position of the new face.
+        self.newlyCreatedFace.center = imageView.center;
+        
+        // Since the original face is in the tray, but the new face is in the
+        // main view, you have to offset the coordinates
+        CGPoint faceCenter = self.newlyCreatedFace.center;
+        self.newlyCreatedFace.center = CGPointMake(faceCenter.x,
+                                                   faceCenter.y + trayViewOffset);
+    } else if (sender.state == UIGestureRecognizerStateChanged) {
+        self.newlyCreatedFace.center = CGPointMake(self.newlyCreatedFaceOriginalCenter.x + translation.x, self.newlyCreatedFaceOriginalCenter.y + translation.y + trayViewOffset);
+    } else if (sender.state == UIGestureRecognizerStateEnded) {
     }
 }
 @end
